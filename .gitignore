@@ -1,0 +1,30 @@
+# 运行时数据（首次运行自动生成，禁止入库）
+# 前导斜杠 = 只锚定仓库根目录，避免误伤 performance/output、generator/output
+# （这两个是内嵌到 HTML 的构建产物，运行必需，必须入库）
+/data/
+/output/
+*.pyc
+__pycache__/
+.venv/
+venv/
+
+# 平台元数据 / 本地注册表
+_meta.json
+.skills_store_lock.json
+
+# 本地状态与工作日志
+.workbuddy/
+.DS_Store
+Thumbs.db
+
+# 前端构建
+performance/src/node_modules/
+performance/src/dist/
+# smoke / 测试加载器的临时打包产物
+performance/src/scripts/.smoke.cjs
+performance/src/scripts/.tmp-*.mjs
+
+# 编辑器
+.idea/
+.vscode/
+*.swp

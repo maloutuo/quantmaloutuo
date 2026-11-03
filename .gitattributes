@@ -1,0 +1,20 @@
+# 统一换行符，避免 Windows 用户提交 CRLF 后在 macOS/Linux 上跑出问题
+* text=auto eol=lf
+
+*.py   text eol=lf
+*.md   text eol=lf
+*.json text eol=lf
+*.yml  text eol=lf
+*.ts   text eol=lf
+*.tsx  text eol=lf
+*.js   text eol=lf
+
+*.png  binary
+*.jpg  binary
+*.pdf  binary
+*.zip  binary
+*.docx binary
+
+# 这两个是"原样内嵌"进主 HTML 的构建产物，按二进制处理以保字节级一致
+performance/output/*.html -text
+generator/output/*.html   -text

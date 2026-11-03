@@ -1,0 +1,60 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    name: 语法与离线构建冒烟
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # 这两个文件被 scripts/report.py 内联进主页面（Tab 3 / Tab 4）。
+      # 一旦被 .gitignore 误排除，CI 不会报错、页面却缺两个 Tab，故显式断言。
+      - name: 校验内嵌资源在位
+        run: |
+          set -e
+          for f in "performance/output/绩效分析平台.html" \
+                   "generator/output/私募证券基金管理人内控制度生成器.html"; do
+            if [ ! -s "$f" ]; then echo "缺失: $f"; exit 1; fi
+            echo "OK $(wc -c < "$f") bytes  $f"
+          done
+
+      - name: 语法检查
+        run: python -m compileall -q scripts generator/scripts
+
+      - name: 重建问答索引（离线）
+        run: python scripts/kb_index.py
+
+      - name: 构建制度生成器（离线）
+        run: |
+          python generator/scripts/build_platform.py
+          python generator/scripts/check_platform.py
+
+      - name: 校验索引覆盖 8 卷
+        run: |
+          python - <<'PY'
+          import json, sys
+          d = json.load(open("data/kb_index.json", encoding="utf-8"))
+          print("scenarios:", len(d["entries"]), "volumes:", len(d["volumes"]))
+          assert len(d["volumes"]) == 8, "问答库应为 8 卷"
+          assert len(d["entries"]) >= 380, "场景数异常"
+          PY
+
+      # 说明：不在此处运行 scripts/bootstrap.py。
+      # 它会联网抓取 36 个官方源（约 108 次请求、3 秒间隔、约 6 分钟），
+      # 在 CI 里既慢又对目标站不礼貌；联网采集应由使用者本机执行。

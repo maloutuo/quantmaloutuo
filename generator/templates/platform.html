@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>私募证券基金管理人内控制度生成器</title>
+<style>
+:root{
+  --bg:#f6f7f9; --panel:#ffffff; --line:#e3e6ea; --line2:#eef0f3;
+  --tx:#1b1f24; --tx2:#5b6570; --tx3:#8b949e;
+  --pri:#1f4e8c; --pri-bg:#eaf1fa;
+  --law:#6b3fa0; --law-bg:#f3edfb;
+  --err:#b3261e; --err-bg:#fdecea;
+  --warn:#8a5a00; --warn-bg:#fff5e0;
+  --ok:#1a7f4b;  --ok-bg:#e8f6ee;
+  --mono:ui-monospace,"SFMono-Regular",Consolas,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);
+  font:14px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+header{background:var(--panel);border-bottom:1px solid var(--line);padding:16px 24px;
+  display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+header h1{margin:0;font-size:18px;font-weight:650;letter-spacing:.2px}
+header .sub{color:var(--tx2);font-size:12.5px}
+header .badge{margin-left:auto;font-size:11.5px;color:var(--tx3);
+  border:1px solid var(--line);border-radius:20px;padding:3px 11px;background:#fafbfc}
+
+.wrap{display:grid;grid-template-columns:390px 1fr;gap:18px;padding:18px 24px 60px;align-items:start}
+@media(max-width:1080px){.wrap{grid-template-columns:1fr}}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.card>h2{margin:0;padding:12px 16px;font-size:13.5px;font-weight:650;
+  border-bottom:1px solid var(--line2);background:#fbfcfd;letter-spacing:.2px}
+.card>h2 .hint{font-weight:400;color:var(--tx3);font-size:11.5px;margin-left:6px}
+.body{padding:14px 16px}
+.pane{position:sticky;top:14px}
+
+label.f{display:block;margin-bottom:11px}
+label.f .t{display:block;font-size:12px;color:var(--tx2);margin-bottom:4px}
+input[type=text],input[type=number],select{width:100%;padding:7px 9px;border:1px solid var(--line);
+  border-radius:6px;font-size:13px;background:#fff;color:var(--tx);font-family:inherit}
+input:focus,select:focus{outline:none;border-color:var(--pri);box-shadow:0 0 0 3px var(--pri-bg)}
+
+table.dept{width:100%;border-collapse:collapse;font-size:13px}
+table.dept th{text-align:left;font-weight:500;color:var(--tx3);font-size:11.5px;
+  padding:0 6px 6px 0;border-bottom:1px solid var(--line2)}
+table.dept td{padding:3px 6px 3px 0}
+table.dept td input{padding:5px 8px;font-size:12.5px}
+.del{border:none;background:none;color:var(--tx3);cursor:pointer;font-size:16px;padding:0 4px;line-height:1}
+.del:hover{color:var(--err)}
+
+.btn{border:1px solid var(--line);background:#fff;color:var(--tx);padding:7px 13px;
+  border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit}
+.btn:hover{border-color:var(--pri);color:var(--pri);background:var(--pri-bg)}
+.btn.pri{background:var(--pri);border-color:var(--pri);color:#fff}
+.btn.pri:hover{background:#173d6e;color:#fff}
+.btn.sm{padding:5px 10px;font-size:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+
+details.adv{margin-top:14px;border:1px solid var(--line);border-radius:8px;background:#fbfcfd}
+details.adv>summary{padding:9px 12px;cursor:pointer;font-size:12.5px;color:var(--tx2);user-select:none}
+details.adv>summary:hover{color:var(--pri)}
+.optgrid{padding:4px 12px 12px;display:grid;grid-template-columns:1fr 1fr;gap:5px 14px}
+.optgrid label{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--tx2);cursor:pointer}
+.optgrid label.single{grid-column:1/-1}
+.optgrid input[type=checkbox]{width:14px;height:14px;accent-color:var(--pri)}
+
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);background:#fbfcfd;padding:0 8px}
+.tabs button{border:none;background:none;padding:11px 15px;font-size:13px;color:var(--tx2);
+  cursor:pointer;border-bottom:2px solid transparent;font-family:inherit}
+.tabs button.on{color:var(--pri);border-bottom-color:var(--pri);font-weight:600}
+.tabs button:hover{color:var(--pri)}
+.tabpane{display:none;padding:16px}
+.tabpane.on{display:block}
+
+.empty{color:var(--tx3);text-align:center;padding:44px 20px;font-size:13px}
+.empty b{display:block;color:var(--tx2);font-size:14px;margin-bottom:6px;font-weight:600}
+
+.diag{border:1px solid var(--line);border-radius:9px;padding:13px 15px;margin-bottom:10px;background:#fff}
+.diag.sev{border-left:3px solid var(--err)}
+.diag.warn{border-left:3px solid var(--warn)}
+.diag.ok{border-left:3px solid var(--ok)}
+.diag .h{display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap}
+.diag .h b{font-size:13.5px}
+.tag{font-size:11px;padding:1.5px 7px;border-radius:4px;font-weight:600}
+.tag.sev{background:var(--err-bg);color:var(--err)}
+.tag.warn{background:var(--warn-bg);color:var(--warn)}
+.tag.ok{background:var(--ok-bg);color:var(--ok)}
+.diag .a{color:var(--tx2);font-size:12.5px}
+.diag .a b{color:var(--tx);font-weight:600}
+
+table.std{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:4px}
+table.std th{text-align:left;padding:7px 8px;background:#f7f8fa;color:var(--tx2);
+  font-weight:600;font-size:11.5px;border-bottom:1px solid var(--line)}
+table.std td{padding:7px 8px;border-bottom:1px solid var(--line2);vertical-align:top}
+table.std tr.miss td{background:var(--err-bg)}
+table.std tr.low td{background:var(--warn-bg)}
+table.std tr.hit td{background:var(--ok-bg)}
+td.n{text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums}
+
+.ref{display:inline-block;font-size:11px;color:var(--law);background:var(--law-bg);
+  border-radius:4px;padding:1px 6px;margin:2px 4px 0 0;text-decoration:none;cursor:pointer}
+.ref.miss{background:var(--err-bg);color:var(--err)}
+
+.modbar{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;
+  padding:9px 11px;background:#f7f8fa;border-radius:8px;border:1px solid var(--line2)}
+.modbar .cnt{font-size:12px;color:var(--tx2)}
+.modlist{max-height:330px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.moditem{display:flex;align-items:center;gap:9px;padding:8px 11px;border-bottom:1px solid var(--line2);font-size:12.5px}
+.moditem:last-child{border-bottom:none}
+.moditem:hover{background:#fafbfc}
+.moditem input{width:14px;height:14px;accent-color:var(--pri)}
+.moditem .nm{flex:1}
+.moditem .kd{font-size:10.5px;padding:1px 6px;border-radius:3px;background:#eef0f3;color:var(--tx2)}
+.moditem .kd.t{background:var(--pri-bg);color:var(--pri)}
+.moditem .kd.o{background:var(--warn-bg);color:var(--warn)}
+
+pre.out{white-space:pre-wrap;word-break:break-word;background:#fbfcfd;border:1px solid var(--line);
+  border-radius:8px;padding:14px;font-family:var(--mono);font-size:12px;line-height:1.75;
+  max-height:640px;overflow:auto;color:#22272e}
+pre.out .k{color:var(--law);font-weight:600}
+pre.out .q{color:var(--tx2)}
+
+.searchbar{display:flex;gap:8px;margin-bottom:12px}
+.lawitem{border:1px solid var(--line);border-radius:8px;padding:11px 13px;margin-bottom:9px;background:#fff}
+.lawitem .t{font-size:12.5px;font-weight:600;color:var(--law);margin-bottom:5px}
+.lawitem .x{font-size:12.5px;color:var(--tx);line-height:1.7}
+mark{background:#fff2a8;padding:0 1px;border-radius:2px}
+.footnote{margin-top:16px;padding:12px 14px;background:#f7f8fa;border:1px solid var(--line2);
+  border-radius:8px;font-size:11.5px;color:var(--tx3);line-height:1.7}
+.footnote b{color:var(--tx2)}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>私募证券基金管理人内控制度生成器</h1>
+  <span class="sub">输入组织架构 · 自动生成带法规原文的制度 · 输出架构合规诊断</span>
+  <span class="badge" id="badge">加载中</span>
+</header>
+
+<div class="wrap">
+
+  <!-- ========== 左：输入 ========== -->
+  <div class="pane">
+    <div class="card">
+      <h2>组织架构输入 <span class="hint">仅填公司名与部门人数即可</span></h2>
+      <div class="body">
+        <label class="f"><span class="t">公司名称</span>
+          <input type="text" id="company" placeholder="上海XX私募证券投资基金管理有限公司"></label>
+
+        <label class="f"><span class="t">最高权力机构</span>
+          <input type="text" id="gov" value="股东会"></label>
+
+        <label class="f"><span class="t">总经理 / 主要负责人</span>
+          <input type="text" id="gm" placeholder="（留空则用『总经理』）"></label>
+
+        <label class="f"><span class="t">合规风控负责人 <span style="color:var(--err)">*</span></span>
+          <input type="text" id="cco" placeholder="负责合规风控的高级管理人员姓名"></label>
+
+        <div style="margin:14px 0 8px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span class="t" style="font-size:12px;color:var(--tx2)">部门与人头</span>
+            <button class="btn sm" id="fillStd">按标准架构填充</button>
+          </div>
+          <table class="dept">
+            <thead><tr><th style="width:62%">部门 / 职能</th><th style="width:24%">人数</th><th></th></tr></thead>
+            <tbody id="deptBody"></tbody>
+          </table>
+          <div class="row">
+            <button class="btn sm" id="addDept">+ 增加部门</button>
+            <span style="font-size:11.5px;color:var(--tx3);align-self:center" id="sumStaff"></span>
+          </div>
+        </div>
+
+        <label class="f" style="margin-top:12px"><span class="t">高级管理人员人数</span>
+          <input type="number" id="execN" min="0" value="2"></label>
+
+        <details class="adv">
+          <summary>业务安排（决定制度模块，可选）</summary>
+          <div class="optgrid">
+            <label><input type="checkbox" id="o_custody" checked>基金托管</label>
+            <label><input type="checkbox" id="o_entrust">委托募集</label>
+            <label><input type="checkbox" id="o_it" checked>信息技术自建</label>
+            <label><input type="checkbox" id="o_acct" checked>会计核算自建</label>
+            <label><input type="checkbox" id="o_out">其他业务外包</label>
+            <label><input type="checkbox" id="o_otc">场外衍生品交易</label>
+            <label><input type="checkbox" id="o_bond">债券投资</label>
+            <label><input type="checkbox" id="o_prog">程序化交易</label>
+            <label><input type="checkbox" id="o_prop">自有资金投资</label>
+            <label><input type="checkbox" id="o_group">同一实控人多家管理人</label>
+          </div>
+        </details>
+
+        <div class="row" style="margin-top:14px">
+          <button class="btn pri" id="run">生成诊断与制度</button>
+          <button class="btn" id="reset">重置</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 右：结果 ========== -->
+  <div class="card">
+    <div class="tabs">
+      <button class="on" data-tab="diag">组织架构诊断</button>
+      <button data-tab="gen">制度生成</button>
+      <button data-tab="law">法规原文库</button>
+    </div>
+
+    <div class="tabpane on" id="tab-diag">
+      <div class="empty" id="diagEmpty"><b>尚未生成</b>填写左侧信息后点击「生成诊断与制度」</div>
+      <div id="diagOut"></div>
+    </div>
+
+    <div class="tabpane" id="tab-gen">
+      <div class="empty" id="genEmpty"><b>尚未生成</b>填写左侧信息后点击「生成诊断与制度」</div>
+      <div id="genWrap" style="display:none">
+        <div class="modbar">
+          <button class="btn sm" id="selAll">全选</button>
+          <button class="btn sm" id="selNone">全不选</button>
+          <span class="cnt" id="modCnt"></span>
+          <button class="btn sm pri" id="doGen" style="margin-left:auto">生成所选制度</button>
+        </div>
+        <div class="modlist" id="modList"></div>
+        <div style="margin-top:14px;display:none" id="outBar">
+          <div class="row" style="margin-bottom:8px">
+            <button class="btn sm" id="copyMd">复制全文</button>
+            <button class="btn sm" id="dlMd">下载 .md</button>
+            <span style="font-size:11.5px;color:var(--tx3);align-self:center" id="outStat"></span>
+          </div>
+          <pre class="out" id="out"></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabpane" id="tab-law">
+      <div class="searchbar">
+        <input type="text" id="lawQ" placeholder="搜索条文关键词或条号，如：合格投资者 / 25% / 第十二条">
+      </div>
+      <div id="lawOut"></div>
+    </div>
+  </div>
+</div>
+
+<script id="platform-data" type="application/json">__PLATFORM_DATA__</script>
+<script>
+(function(){
+"use strict";
+var DATA = JSON.parse(document.getElementById("platform-data").textContent);
+var LAWS = DATA.laws, MODULES = DATA.modules, META = DATA.meta.law_meta;
+
+/* ---------- 工具 ---------- */
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s).replace(/[&<>]/g,function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];});}
+var CN=["零","一","二","三","四","五","六","七","八","九"];
+function cn(n){n=+n;
+  if(n<10)return CN[n];
+  if(n<20)return "十"+(n%10?CN[n%10]:"");
+  if(n<100)return CN[Math.floor(n/10)]+"十"+(n%10?CN[n%10]:"");
+  return ""+n;}
+function artName(k,no,item){
+  return META[k].name + "第" + cn(no) + "条" + (item||"");}
+function artText(k,no){
+  var a=LAWS[k]; if(!a) return "";
+  return a[no] || a[""+no] || "";}
+var MISSING="⚠️ 该条原文尚未录入原文库，落脚注前须以官方原文复核。";
+
+/* ---------- 部门 ---------- */
+var DEPT_KEYS=[
+  {ph:"{投资部}",   kw:["投资","投研"],              std:null},
+  {ph:"{研究部}",   kw:["研究"],                      std:null},
+  {ph:"{交易部}",   kw:["交易","执行"],               std:null},
+  {ph:"{合规风控部}",kw:["合规","风控","风险"],        std:null},
+  {ph:"{市场部}",   kw:["市场","募集","营销","财富"],  std:null},
+  {ph:"{综合部}",   kw:["综合","运营","行政","人事","人力"],std:null},
+  {ph:"{财务部}",   kw:["财务","会计"],               std:null},
+  {ph:"{信息技术部}",kw:["信息技术","技术","IT","系统"],std:null}
+];
+function deptMap(){
+  var m={}; DEPT_KEYS.forEach(function(d){m[d.ph]="";});
+  var rows=readDepts();
+  DEPT_KEYS.forEach(function(d){
+    for(var i=0;i<rows.length;i++){
+      var nm=rows[i].name||"";
+      for(var j=0;j<d.kw.length;j++){ if(nm.indexOf(d.kw[j])>=0){ m[d.ph]=nm; return; } }
+    }
+  });
+  return m;
+}
+function fallback(){
+  return {"{投资部}":"投资管理部门","{研究部}":"研究部门","{交易部}":"交易部门",
+    "{合规风控部}":"合规风控部门","{市场部}":"市场募集部门","{综合部}":"运营综合部门",
+    "{财务部}":"财务部门","{信息技术部}":"信息技术部门"};
+}
+function readDepts(){
+  var out=[];
+  var trs=$("deptBody").querySelectorAll("tr");
+  for(var i=0;i<trs.length;i++){
+    var n=trs[i].querySelector(".dn").value.trim();
+    var c=parseInt(trs[i].querySelector(".dc").value,10)||0;
+    if(n) out.push({name:n,count:c});
+  }
+  return out;
+}
+function addRow(n,c){
+  var tr=document.createElement("tr");
+  tr.innerHTML='<td><input type="text" class="dn" value="'+esc(n||'')+'" placeholder="如 投资部"></td>'+
+    '<td><input type="number" class="dc" min="0" value="'+(c||0)+'"></td>'+
+    '<td style="width:24px"><button class="del" title="删除">&times;</button></td>';
+  tr.querySelector(".del").onclick=function(){ tr.remove(); updSum(); };
+  tr.querySelector(".dc").oninput=updSum;
+  $("deptBody").appendChild(tr); updSum();
+}
+function updSum(){
+  var d=readDepts(),t=0; d.forEach(function(x){t+=x.count;});
+  $("sumStaff").textContent="合计 "+d.length+" 个部门 / "+t+" 人";
+}
+function opt(id){return $(id).checked;}
+
+/* ---------- 标准架构建议 ---------- */
+var STD=[
+  {key:"投资",   name:"投资管理", min:2, why:"投资决策、投资方案形成；须聘用具有相应从业经历的高管负责投资管理",
+   ref:[["内控指引",20],["私募条例",26]]},
+  {key:"研究",   name:"研究",     min:1, why:"研究报告、投资池维护，为投资决策提供书面支撑",
+   ref:[["内控指引",14],["内控指引",20]]},
+  {key:"交易",   name:"交易执行", min:1, why:"指令执行；岗位须与投资决策分离，操作相互独立",
+   ref:[["内控指引",10],["内控指引",14]]},
+  {key:"合规",   name:"合规风控", min:2, why:"必须设置负责合规风控的高级管理人员，独立履行监督检查评价报告建议职能",
+   ref:[["内控指引",12],["内控指引",27]]},
+  {key:"市场",   name:"市场/募集",min:1, why:"投资者适当性、宣传推介与募集；须履行了解投资者、风险揭示义务",
+   ref:[["内控指引",16],["运作指引",5],["适当性办法",6]]},
+  {key:"综合",   name:"运营/综合",min:1, why:"档案归档与行政运营；内控资料自清算终止起保存不少于10年",
+   ref:[["内控指引",26]]},
+  {key:"财务",   name:"财务/会计",min:1, why:"分别记账、分别核算、净值化管理与估值复核",
+   ref:[["内控指引",18],["运作指引",29]]}
+];
+
+/* ---------- 诊断 ---------- */
+function diagnose(cfg){
+  var r=[], depts=cfg.depts, total=0;
+  depts.forEach(function(d){total+=d.count;});
+
+  function has(kw){ for(var i=0;i<depts.length;i++){
+      for(var j=0;j<kw.length;j++) if(depts[i].name.indexOf(kw[j])>=0) return depts[i]; } return null; }
+
+  // 1 合规风控负责人
+  if(!cfg.cco){
+    r.push({lvl:"sev", t:"未设置合规风控负责人",
+      a:"法规强制要求设置负责合规风控的高级管理人员，该岗位独立履行对内部控制的监督、检查、评价、报告和建议职能。缺失此项将导致内控制度整体不成立。",
+      ref:[["内控指引",12]]});
+  }
+  // 2 高管人数
+  if(cfg.execN<2){
+    r.push({lvl:"sev", t:"高级管理人员不足 2 人（当前 "+cfg.execN+" 人）",
+      a:"私募基金管理人应当具备至少 2 名高级管理人员。",
+      ref:[["内控指引",11]]});
+  }
+  // 3 专职员工
+  if(total<5){
+    r.push({lvl:"warn", t:"专职员工合计不足 5 人（当前 "+total+" 人）",
+      a:"管理人登记要求专职员工不少于 5 人。此为登记条件而非制度条文，但需在制度与人员规划中同步解决。",
+      ref:[["登记备案办法",8]]});
+  }
+  // 4 投资与交易分离
+  var inv=has(["投资","投研"]), trd=has(["交易","执行"]);
+  if(inv && !trd){
+    r.push({lvl:"sev", t:"缺交易执行职能，投资决策与交易执行未分离",
+      a:"组织结构应当体现职责明确、相互制约，通过部门分设、岗位分设实现业务流程控制。投资经理不得兼任交易员。",
+      ref:[["内控指引",10],["内控指引",14]]});
+  }
+  if(inv && trd && inv.count>=1 && trd.count>=1 && inv.name===trd.name){
+    r.push({lvl:"sev", t:"投资与交易为同一部门，未实现岗位分离",
+      a:"同一部门同时承担投资决策与交易执行，不满足相互制约要求。应当分设或在部门内明确岗位隔离并留痕。",
+      ref:[["内控指引",10],["内控指引",14]]});
+  }
+  // 5 职能齐备性
+  var missing=[];
+  STD.forEach(function(s){
+    var hit=has([s.key]);
+    if(!hit) missing.push(s);
+  });
+  if(missing.length){
+    r.push({lvl:"warn", t:"缺 "+(missing.length)+" 项建议职能："+missing.map(function(s){return s.name;}).join("、"),
+      a:"内部控制应当覆盖各项业务、各个部门和各级人员，并涵盖资金募集、投资研究、投资运作、运营保障和信息披露等主要环节。小型机构可一人多岗，但必须保留相互制约，并在制度中写明兼岗与隔离安排。",
+      ref:[["内控指引",5],["内控指引",10]]});
+  }
+  // 6 人数低于建议
+  var low=[];
+  STD.forEach(function(s){
+    var hit=has([s.key]);
+    if(hit && hit.count<s.min) low.push(s.name+"（现 "+hit.count+" / 建议 "+s.min+"）");
+  });
+  if(low.length){
+    r.push({lvl:"warn", t:"部分职能人数低于建议配置",
+      a:low.join("；")+"。内部控制应当与管理规模和员工人数相匹配（成本效益原则），但关键岗位不得因精简而失去制约。",
+      ref:[["内控指引",5],["内控指引",11]]});
+  }
+  // 7 委托募集风险（最优先提示）
+  if(cfg.o.entrust){
+    r.push({lvl:"sev", t:"委托募集存在法律冲突，须先行核实",
+      a:"《私募投资基金监督管理条例》第十七条（行政法规，2023-09-01 施行）规定『私募基金管理人应当自行募集资金，不得委托他人募集资金，但国务院证券监督管理机构另有规定的除外』，与《内控指引》第十七条的委托募集安排冲突。按上位法优先、新法优先，应以条例为准。违反罚则：没收违法所得并处 1–5 倍罚款；无违法所得或不足 100 万元的，并处 10 万–100 万元。",
+      ref:[["私募条例",17],["私募条例",48]]});
+  }
+  // 8 场内衍生品口径提示
+  if(!r.length){
+    r.push({lvl:"ok", t:"架构未见阻断性问题",
+      a:"已覆盖关键合规要求。仍建议逐项核对下方职能配置表，并确认合规风控负责人独立履职。",
+      ref:[["内控指引",12]]});
+  }
+  return r;
+}
+
+function refHtml(refs){
+  if(!refs) return "";
+  return refs.map(function(r){
+    var miss = !artText(r[0],r[1]);
+    return '<a class="ref'+(miss?" miss":"")+'" data-law="'+r[0]+'" data-no="'+r[1]+'"'+
+      (miss?' title="原文未录入，须核对官方原文"':'')+'>'+esc(artName(r[0],r[1],r[2]))+(miss?" ⚠":"")+'</a>';
+  }).join("");
+}
+function stdTable(depts){
+  function has(kw){ for(var i=0;i<depts.length;i++){
+      for(var j=0;j<kw.length;j++) if(depts[i].name.indexOf(kw[j])>=0) return depts[i]; } return null; }
+  var h='<table class="std"><thead><tr><th style="width:14%">职能</th><th style="width:9%">建议</th>'+
+        '<th style="width:9%">现状</th><th style="width:14%">依据</th><th>说明与法规要求</th></tr></thead><tbody>';
+  STD.forEach(function(s){
+    var hit=has([s.key]);
+    var cls = !hit ? "miss" : (hit.count<s.min ? "low" : "hit");
+    h+='<tr class="'+cls+'"><td><b>'+esc(s.name)+'</b></td>'+
+       '<td class="n">'+s.min+'</td><td class="n">'+(hit?hit.count:"—")+'</td>'+
+       '<td>'+refHtml(s.ref)+'</td><td>'+esc(s.why)+'</td></tr>';
+  });
+  h+='</tbody></table>';
+  return h;
+}
+
+/* ---------- 制度生成 ---------- */
+function fill(tpl,cfg,dm){
+  var s=String(tpl);
+  s=s.replace(/\{公司\}/g, cfg.company||"本公司");
+  s=s.replace(/\{最高权力机构\}/g, cfg.gov||"股东会");
+  s=s.replace(/\{总经理\}/g, cfg.gm||"总经理");
+  s=s.replace(/\{合规风控负责人\}/g, cfg.cco||"合规风控负责人");
+  s=s.replace(/\{投资决策委员会\}/g, "投资决策委员会");
+  for(var k in dm){ s=s.split(k).join(dm[k]||fallback()[k]); }
+  return s;
+}
+function clauseBlock(txt,refs,cfg){
+  var out=esc(txt)+"\n";
+  (refs||[]).forEach(function(r){
+    out+="\n【依据】"+artName(r[0],r[1],r[2])+"\n";
+    var t=artText(r[0],r[1]);
+    if(t) out+="【原文】"+t+"\n";
+  });
+  return out+"\n";
+}
+function buildDoc(mod,cfg,dm){
+  var L=[];
+  L.push("《"+(cfg.company||"本公司")+mod.name+"》");
+  L.push("");
+  L.push("（经"+(cfg.gov||"股东会")+"审议通过后施行）");
+  L.push("");
+  L.push("第一章  总则");
+  L.push("");
+  var n=0;
+  function put(txt,refs){ n++; L.push("第"+cn(n)+"条  "+txt); L.push("");
+    (refs||[]).forEach(function(r){
+      L.push("【依据】"+artName(r[0],r[1],r[2]));
+      var t=artText(r[0],r[1]);
+      L.push("【原文】"+(t||MISSING));
+      L.push("");
+    });
+  }
+  put("为规范"+(cfg.company||"本公司")+mod.name.replace("制度","")+"相关工作，根据现行法律法规及自律规则，制定本制度。",[["内控指引",3]]);
+  put("本制度适用于"+(cfg.company||"本公司")+"及全体员工，相关业务环节及所有部门和人员均应当遵守。",[["内控指引",5]]);
+  var duty=(dm["{合规风控部}"]||"合规风控部门");
+  put("职责分工："+(mod.duty||"")+"由"+(duty||"合规风控部门")+"归口统筹；"+
+      "各相关部门按授权权限具体执行；合规风控负责人对执行情况独立履行监督、检查、评价、报告和建议职能。",
+      [["内控指引",10],["内控指引",12]]);
+
+  L.push("第二章  管理要求");
+  L.push("");
+  (mod.clauses||[]).forEach(function(c){
+    put(fill(c.t,cfg,dm), c.r);
+  });
+
+  L.push("第三章  记录与档案");
+  L.push("");
+  put("本制度项下的记录、审批文件及留痕资料应当完整归档，确保信息的完整、连续、准确和可追溯，保存期限自私募基金清算终止之日起不得少于10年；其中适当性相关资料保存期限不得少于20年。",
+      [["内控指引",26],["适当性办法",32]]);
+
+  L.push("第四章  监督与责任");
+  L.push("");
+  put((duty||"合规风控部门")+"应当对本制度执行情况进行定期和不定期的检查、监督及评价，发现缺陷及时改进；对违反本制度造成损失的责任人员追究相应责任。",
+      [["内控指引",27]]);
+  put("本制度随法律法规调整及公司经营战略、方针、理念等内外部环境变化同步修订。",[["内控指引",5]]);
+
+  L.push("第五章  附则");
+  L.push("");
+  put("本制度由"+(duty||"合规风控部门")+"负责解释。",[["内控指引",3]]);
+  put("本制度自"+(cfg.gov||"股东会")+"审议通过之日起施行。",[["内控指引",3]]);
+
+  L.push("");
+  L.push("---");
+  L.push("");
+  L.push("附：法规依据索引表");
+  L.push("");
+  var used={};
+  (mod.clauses||[]).forEach(function(c){ (c.r||[]).forEach(function(r){
+      used[r[0]]=used[r[0]]||{}; used[r[0]][r[1]]=1; }); });
+  ["内控指引","运作指引","适当性办法","私募条例","登记指引1号","登记备案办法"].forEach(function(k){
+    if(used[k]||k==="内控指引"){
+      L.push("| "+META[k].name+" | "+META[k].org+" | "+META[k].date+" | "+META[k].level+" | 现行有效 |");
+    }
+  });
+  L.push("");
+  L.push("注：本制度为草案，须经合规风控负责人审核、最高权力机构审议通过后方生效。");
+  return L.join("\n");
+}
+
+/* ---------- 渲染 ---------- */
+function renderDiag(cfg){
+  var rs=diagnose(cfg), h="";
+  rs.forEach(function(r){
+    h+='<div class="diag '+r.lvl+'"><div class="h">'+
+       '<span class="tag '+r.lvl+'">'+(r.lvl==="sev"?"严重":r.lvl==="warn"?"提示":"符合")+'</span>'+
+       '<b>'+esc(r.t)+'</b></div>'+
+       '<div class="a">'+esc(r.a)+'</div>'+
+       '<div style="margin-top:6px">'+refHtml(r.ref)+'</div></div>';
+  });
+  h+='<div class="card" style="margin-top:16px"><h2>职能配置对照表 <span class="hint">建议 vs 现状</span></h2>'+
+     '<div class="body">'+stdTable(cfg.depts)+'</div></div>';
+  $("diagEmpty").style.display="none";
+  $("diagOut").innerHTML=h;
+  bindRefs();
+}
+function renderMods(cfg){
+  var list=$("modList"); list.innerHTML="";
+  var picked=0;
+  MODULES.forEach(function(m){
+    var on = (m.kind==="必建") ||
+             (m.trigger==="信息技术自建" && cfg.o.it) ||
+             (m.trigger==="会计核算自建" && cfg.o.acct) ||
+             (m.trigger==="基金托管" && cfg.o.custody) ||
+             (m.trigger==="基金不托管" && !cfg.o.custody) ||
+             (m.trigger==="委托募集" && cfg.o.entrust) ||
+             (m.trigger==="其他外包" && cfg.o.out) ||
+             (m.trigger==="场外衍生品" && cfg.o.otc) ||
+             (m.trigger==="债券投资" && cfg.o.bond) ||
+             (m.trigger==="程序化交易" && cfg.o.prog) ||
+             (m.trigger==="自有资金投资" && cfg.o.prop) ||
+             (m.trigger==="同一实控人控制两家以上管理人" && cfg.o.group);
+    if(on) picked++;
+    var d=document.createElement("div");
+    d.className="moditem";
+    d.innerHTML='<input type="checkbox"'+(on?" checked":"")+' data-id="'+m.id+'">'+
+      '<span class="kd'+(m.kind==="触发"?" t":m.kind==="选建"?" o":"")+'">'+m.kind+'</span>'+
+      '<span class="nm">'+esc(m.name)+'</span>'+
+      '<span style="font-size:11px;color:var(--tx3)">'+(m.clauses?m.clauses.length:0)+' 条</span>';
+    list.appendChild(d);
+  });
+  $("modCnt").textContent="共 "+MODULES.length+" 个模块，已选 "+picked+" 个";
+  $("genWrap").style.display="block";
+  $("genEmpty").style.display="none";
+}
+function collectCfg(){
+  return {
+    company:$("company").value.trim(),
+    gov:$("gov").value.trim()||"股东会",
+    gm:$("gm").value.trim(),
+    cco:$("cco").value.trim(),
+    execN:parseInt($("execN").value,10)||0,
+    depts:readDepts(),
+    o:{custody:opt("o_custody"),entrust:opt("o_entrust"),it:opt("o_it"),acct:opt("o_acct"),
+       out:opt("o_out"),otc:opt("o_otc"),bond:opt("o_bond"),prog:opt("o_prog"),
+       prop:opt("o_prop"),group:opt("o_group")}
+  };
+}
+function generate(){
+  var cfg=collectCfg(), dm=deptMap(), fb=fallback();
+  for(var k in fb){ if(!dm[k]) dm[k]=fb[k]; }
+  var ids=[], boxes=$("modList").querySelectorAll("input[type=checkbox]");
+  for(var i=0;i<boxes.length;i++) if(boxes[i].checked) ids.push(boxes[i].getAttribute("data-id"));
+  if(!ids.length){ alert("请至少选择一个制度模块"); return; }
+  var parts=[];
+  parts.push("# "+(cfg.company||"本公司")+"内部控制制度汇编");
+  parts.push("");
+  parts.push("> 生成时间：依据现行法律法规及自律规则自动汇编，每条附法规原文出处。");
+  parts.push("> 本汇编为草案，须经合规风控负责人审核、最高权力机构审议通过后方生效。");
+  parts.push("");
+  parts.push("## 目录");
+  parts.push("");
+  ids.forEach(function(id,ix){
+    for(var j=0;j<MODULES.length;j++) if(MODULES[j].id===id){
+      parts.push((ix+1)+". 《"+(cfg.company||"本公司")+MODULES[j].name+"》");
+    }
+  });
+  parts.push("");
+  var n=0;
+  ids.forEach(function(id){
+    for(var j=0;j<MODULES.length;j++) if(MODULES[j].id===id){
+      n++;
+      parts.push("---");
+      parts.push("");
+      parts.push(buildDoc(MODULES[j],cfg,dm));
+      parts.push("");
+    }
+  });
+  var md=parts.join("\n");
+  $("out").innerHTML=md.split("\n").map(function(ln){
+    if(/^【依据】/.test(ln)) return '<span class="k">'+esc(ln)+'</span>';
+    if(/^【原文】/.test(ln)) return '<span class="q">'+esc(ln)+'</span>';
+    return esc(ln);
+  }).join("\n");
+  $("outBar").style.display="block";
+  $("outStat").textContent="已生成 "+n+" 份制度 / "+md.length+" 字符";
+  window.__MD__=md; window.__NAME__=(cfg.company||"内控制度");
+}
+
+/* ---------- 法规库 ---------- */
+function renderLaws(q){
+  q=(q||"").trim();
+  var h="",cnt=0;
+  Object.keys(META).forEach(function(k){
+    var arts=LAWS[k]; if(!arts) return;
+    var keys=Object.keys(arts);
+    keys.sort(function(a,b){return (+a)-(+b);});
+    keys.forEach(function(no){
+      var tx=arts[no];
+      if(q && tx.indexOf(q)<0 && ("第"+cn(no)+"条").indexOf(q)<0) return;
+      cnt++;
+      var show=q?highlight(tx,q):esc(tx);
+      h+='<div class="lawitem"><div class="t">'+esc(artName(k,no))+'</div>'+
+         '<div class="x">'+show+'</div></div>';
+    });
+  });
+  $("lawOut").innerHTML = cnt? h : '<div class="empty"><b>未命中</b>换个关键词试试</div>';
+}
+function highlight(txt,q){
+  var i=txt.indexOf(q); if(i<0) return esc(txt);
+  return esc(txt.slice(0,i))+"<mark>"+esc(txt.substr(i,q.length))+"</mark>"+esc(txt.slice(i+q.length));
+}
+function bindRefs(){
+  var as=document.querySelectorAll("a.ref");
+  for(var i=0;i<as.length;i++){
+    as[i].onclick=function(){
+      var k=this.getAttribute("data-law"), no=this.getAttribute("data-no");
+      switchTab("law"); $("lawQ").value=""; renderLaws("");
+      var t=artText(k,no);
+      if(t){
+        $("lawOut").innerHTML='<div class="lawitem"><div class="t">'+esc(artName(k,no))+
+          '</div><div class="x">'+esc(t)+'</div></div>';
+      }else{
+        $("lawOut").innerHTML='<div class="lawitem" style="border-left:3px solid var(--err)">'+
+          '<div class="t">'+esc(artName(k,no))+'</div><div class="x">'+MISSING+'</div></div>';
+      }
+      window.scrollTo({top:0,behavior:"smooth"});
+    };
+  }
+}
+function switchTab(name){
+  var bs=document.querySelectorAll(".tabs button");
+  for(var i=0;i<bs.length;i++) bs[i].classList.toggle("on", bs[i].getAttribute("data-tab")===name);
+  var ps=document.querySelectorAll(".tabpane");
+  for(var j=0;j<ps.length;j++) ps[j].classList.toggle("on", ps[j].id==="tab-"+name);
+}
+
+/* ---------- 事件 ---------- */
+var bs=document.querySelectorAll(".tabs button");
+for(var i=0;i<bs.length;i++) bs[i].onclick=function(){ switchTab(this.getAttribute("data-tab")); };
+$("addDept").onclick=function(){ addRow("",1); };
+$("fillStd").onclick=function(){
+  $("deptBody").innerHTML="";
+  addRow("投资部",2); addRow("研究部",1); addRow("交易部",1);
+  addRow("合规风控部",2); addRow("市场部",1); addRow("综合部",1); addRow("财务部",1);
+};
+$("run").onclick=function(){ var c=collectCfg(); renderDiag(c); renderMods(c); switchTab("diag"); };
+$("reset").onclick=function(){ location.reload(); };
+$("selAll").onclick=function(){ var b=$("modList").querySelectorAll("input"); for(var i=0;i<b.length;i++) b[i].checked=true; };
+$("selNone").onclick=function(){ var b=$("modList").querySelectorAll("input"); for(var i=0;i<b.length;i++) b[i].checked=false; };
+$("doGen").onclick=generate;
+$("copyMd").onclick=function(){
+  if(!window.__MD__) return;
+  navigator.clipboard.writeText(window.__MD__).then(function(){
+    var b=$("copyMd"),o=b.textContent; b.textContent="已复制"; setTimeout(function(){b.textContent=o;},1400);
+  });
+};
+$("dlMd").onclick=function(){
+  if(!window.__MD__) return;
+  var blob=new Blob([window.__MD__],{type:"text/markdown;charset=utf-8"});
+  var a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=window.__NAME__+"_内控制度汇编.md";
+  a.click();
+};
+$("lawQ").oninput=function(){ renderLaws(this.value); };
+
+/* ---------- 初始化 ---------- */
+$("fillStd").click();
+$("company").value="";
+var tot=0; Object.keys(LAWS).forEach(function(k){ tot+=Object.keys(LAWS[k]).length; });
+$("badge").textContent="法规 "+tot+" 条 / 模块 "+MODULES.length+" 个";
+renderLaws("");
+})();
+</script>
+</body>
+</html>

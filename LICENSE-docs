@@ -1,0 +1,30 @@
+# 文档与问答库许可（CC BY 4.0）
+
+本仓库中以下内容采用 **Creative Commons Attribution 4.0 International（CC BY 4.0）** 许可：
+
+- `references/` 下的全部合规问答库（8 卷、401 条场景）
+- `SKILL.md`、`README.md`、`docs/` 下的文档
+- `generator/references/` 下的制度模块映射与条款骨架文本
+
+许可全文：https://creativecommons.org/licenses/by/4.0/legalcode.zh-hans
+
+## 你可以
+
+- **共享**：以任何媒介或格式复制、发行本作品
+- **演绎**：修改、转换、再创作，包括商业用途
+
+## 你必须
+
+- **署名**：注明来源（本仓库地址与作者），附上许可链接，并说明是否作出修改
+- **不得增加额外限制**：不能对本许可允许的行为施加法律或技术限制
+
+## 署名
+
+- **著作权人**：马喽驼
+- **建议署名格式**：`私募合规工作台 v1.4.6 · 马喽驼 · <本仓库地址> · CC BY 4.0`
+
+## 说明
+
+- 代码部分（`scripts/`、`generator/scripts/`、`performance/src/`）适用根目录 [LICENSE](LICENSE) 中的 **MIT** 许可，不适用本文件。
+- 问答库中引用的法律、行政法规、部门规章、自律规则原文，属《中华人民共和国著作权法》第五条列明的官方文件，不适用著作权保护；引用时仍建议注明发布机关与文号。
+- 转载或二次分发问答库时，请一并保留 [DISCLAIMER.md](DISCLAIMER.md) 的免责声明。
